@@ -69,7 +69,7 @@ func (d *Device) ToWebThing() webthing.WebThing {
 	properties := func(variables map[string]Variable) map[string]webthing.Property {
 		result := map[string]webthing.Property{}
 		for name, variable := range variables {
-			result["name"] = webthing.Property{
+			result[name] = webthing.Property{
 				Type: variable.Type,
 				HREF: fmt.Sprintf("/v1/devices/%v/%v", d.ID, name)}
 		}
