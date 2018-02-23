@@ -11,8 +11,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	particle "github.com/DazWilkin/webthing/particle"
-	webthing "github.com/DazWilkin/webthing/webthing"
+	particle "github.com/DazWilkin/WebThing-Particle-Golang/particle"
+	webthing "github.com/DazWilkin/WebThing-Particle-Golang/webthing"
 )
 
 var (
