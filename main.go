@@ -1,21 +1,28 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/joho/godotenv"
 
+	mock "github.com/DazWilkin/WebThing-Particle-Golang/mock"
 	particle "github.com/DazWilkin/WebThing-Particle-Golang/particle"
 	webthing "github.com/DazWilkin/WebThing-Particle-Golang/webthing"
 )
 
+var wg = &sync.WaitGroup{}
+
 var (
+	_      mock.Device
 	_      particle.Device
 	_      webthing.WebThing
 	random *rand.Rand
@@ -110,7 +117,30 @@ func main() {
 		map[string]particle.Variable{},
 	)
 	devices = append(devices, device)
+	device, _ = particle.NewDevice(
+		e[3].ID,
+		e[3].Name,
+		"Raspberry Pi",
+		"unknown",
+		time.Now(),
+		map[string]particle.Function{},
+		map[string]particle.Variable{},
+	)
 
+	device, _ = particle.NewDevice(
+		e[4].ID,
+		e[4].Name,
+		"Photon",
+		"0.7.0-rc.1",
+		time.Now(),
+		make(map[string]particle.Function),
+		make(map[string]particle.Variable))
+	device.AddVariable("temperature", particle.Variable{Type: "float", Value: randomStr()})
+	device.AddVariable("temperature", particle.Variable{Type: "float", Value: randomStr()})
+	device.AddVariable("humidity", particle.Variable{Type: "float", Value: randomStr()})
+	devices = append(devices, device)
+
+	devices = append(devices, device)
 	// Add the Devices to an aggregating Account
 	// Account provides no functional value beyond this glue
 	account, _ := particle.NewAccount("someone@gmail.com", []particle.Device{})
@@ -127,4 +157,34 @@ func main() {
 		fmt.Printf("device: %v\n", device.ToWebThing())
 	}
 
+	serveThings(devices, 40000)
+
+}
+func serveThings(devices []particle.Device, basePort uint16) {
+	log.Println("[serveThings] Entered")
+	var i uint16
+	for i = 0; i < uint16(len(devices)); i++ {
+		wg.Add(1)
+		go serveThing(devices[i], basePort+i)
+	}
+	wg.Wait()
+}
+func serveThing(device particle.Device, port uint16) {
+	defer wg.Done()
+	log.Println("[go-routine] Entered")
+	t := device.ToWebThing()
+	server := http.NewServeMux()
+	server.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("[handleFunc:%v] Entered\n", port)
+		json, err := json.Marshal(t)
+		if err != nil {
+			log.Fatalf("Unable to marshall JSON: %v", err)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(json)
+	})
+	log.Printf("[serveThings:go] %v→:%v\n", t.Name, port)
+	http.ListenAndServe(
+		fmt.Sprintf(":%v", port),
+		server)
 }

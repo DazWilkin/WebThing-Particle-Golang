@@ -3,7 +3,6 @@ package mock
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/DazWilkin/WebThing-Particle-Golang/webthing"
 )
@@ -18,9 +17,9 @@ func NewDevice(name, _type string) Device {
 	d := Device{
 		Name: name,
 		Type: _type}
-	return d, nil
+	return d
 }
-func (d *Device) String() {
+func (d *Device) String() string {
 	log.Println("[String] Entered")
 	return fmt.Sprintf("%v [%v]\n", d.Name, d.Type)
 }
