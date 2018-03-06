@@ -24,7 +24,7 @@ func NewDevice(
 	functions map[string]Function,
 	variables map[string]Variable) (Device, error) {
 	log.Println("[NewDevice] Entered")
-	p := Device{
+	d := Device{
 		ID:        id,
 		Name:      name,
 		Type:      _type,
@@ -32,7 +32,7 @@ func NewDevice(
 		Handshake: handshake,
 		Functions: functions,
 		Variables: variables}
-	return p, nil
+	return d, nil
 }
 func (d *Device) AddFunction(name string, function Function) {
 	log.Println("[AddFunction] Entered")
